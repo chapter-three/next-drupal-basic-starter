@@ -1,15 +1,18 @@
 import Head from "next/head"
-import { DrupalNode, getResourceCollectionFromContext } from "next-drupal"
-import { NodeArticleTeaser } from "@/components/node-article"
 import { GetStaticPropsResult } from "next"
+import { DrupalNode, getResourceCollectionFromContext } from "next-drupal"
 
-interface IndexPageProps {
+import { getMenus } from "@/lib/get-menus"
+import { NodeArticleTeaser } from "@/components/node-article"
+import { Layout, LayoutProps } from "@/components/layout"
+
+interface IndexPageProps extends LayoutProps {
   nodes: DrupalNode[]
 }
 
-export default function IndexPage({ nodes }: IndexPageProps) {
+export default function IndexPage({ menus, nodes }: IndexPageProps) {
   return (
-    <>
+    <Layout menus={menus}>
       <Head>
         <title>Next.js for Drupal</title>
         <meta
@@ -18,7 +21,7 @@ export default function IndexPage({ nodes }: IndexPageProps) {
         />
       </Head>
       <div>
-        <h1 className="text-6xl font-black mb-10">Latest Articles.</h1>
+        <h1 className="mb-10 text-6xl font-black">Latest Articles.</h1>
 
         {nodes?.length ? (
           nodes.map((node) => (
@@ -31,7 +34,7 @@ export default function IndexPage({ nodes }: IndexPageProps) {
           <p className="py-4">No nodes found</p>
         )}
       </div>
-    </>
+    </Layout>
   )
 }
 
@@ -52,6 +55,7 @@ export async function getStaticProps(
   return {
     props: {
       nodes,
+      menus: await getMenus(),
     },
     revalidate: 10,
   }

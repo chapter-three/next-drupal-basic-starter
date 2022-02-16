@@ -1,4 +1,5 @@
 import * as React from "react"
+import { GetStaticPathsResult, GetStaticPropsResult } from "next"
 import Head from "next/head"
 import {
   DrupalNode,
@@ -6,30 +7,21 @@ import {
   getResourceFromContext,
   getResourceTypeFromContext,
 } from "next-drupal"
-import {
-  GetStaticPathsResult,
-  GetStaticPropsContext,
-  GetStaticPropsResult,
-} from "next"
+
+import { getMenus } from "@/lib/get-menus"
 import { NodeArticle } from "@/components/node-article"
 import { NodeBasicPage } from "@/components/node-basic-page"
+import { Layout, LayoutProps } from "@/components/layout"
 
-interface NodePageProps {
-  preview: GetStaticPropsContext["preview"]
+interface NodePageProps extends LayoutProps {
   node: DrupalNode
 }
 
-export default function NodePage({ node, preview }: NodePageProps) {
-  const [showPreviewAlert, setShowPreviewAlert] = React.useState<boolean>(false)
-
+export default function NodePage({ node, menus }: NodePageProps) {
   if (!node) return null
 
-  React.useEffect(() => {
-    setShowPreviewAlert(preview && window.top === window.self)
-  }, [])
-
   return (
-    <>
+    <Layout menus={menus}>
       <Head>
         <title>{node.title}</title>
         <meta
@@ -37,19 +29,9 @@ export default function NodePage({ node, preview }: NodePageProps) {
           content="A Next.js site powered by a Drupal backend."
         />
       </Head>
-      {showPreviewAlert && (
-        <div className="fixed top-4 right-4">
-          <a
-            href="/api/exit-preview"
-            className="px-4 py-2 text-sm text-white bg-black rounded-md"
-          >
-            Exit preview
-          </a>
-        </div>
-      )}
       {node.type === "node--page" && <NodeBasicPage node={node} />}
       {node.type === "node--article" && <NodeArticle node={node} />}
-    </>
+    </Layout>
   )
 }
 
@@ -90,7 +72,7 @@ export async function getStaticProps(
 
   return {
     props: {
-      preview: context.preview || false,
+      menus: await getMenus(),
       node,
     },
     revalidate: 900,
